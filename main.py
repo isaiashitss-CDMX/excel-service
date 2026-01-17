@@ -1,16 +1,17 @@
 from fastapi import FastAPI
-from fastapi.responses import Response
+from fastapi.responses import FileResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
-from io import BytesIO
 
 app = FastAPI()
 
 
 @app.post("/excel")
 def crear_excel(payload: dict):
+    data = payload.get("data", [])          # filas
+    if not data:
+        return {"error": "No data provided"}
 
-    data = payload["data"]          # filas
     filename = payload.get("filename", "archivo.xlsx")
     sheet = payload.get("sheet", "Datos")
 
@@ -39,19 +40,13 @@ def crear_excel(payload: dict):
         for col_idx, header in enumerate(headers, start=1):
             ws.cell(row=row_idx, column=col_idx, value=row.get(header))
 
-    # Guardar en memoria
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
+    # Guardar en archivo temporal
+    temp_file = f"/tmp/{filename}"
+    wb.save(temp_file)
 
-    # OJO: convertimos todo a bytes y enviamos con Response
-    content = output.getvalue()
-
-    return Response(
-        content=content,
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={
-            "Content-Disposition": f'attachment; filename="{filename}"',
-            "Content-Length": str(len(content))
-        }
+    # Devolver archivo al cliente
+    return FileResponse(
+        path=temp_file,
+        filename=filename,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
