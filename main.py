@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 from io import BytesIO
@@ -44,10 +44,14 @@ def crear_excel(payload: dict):
     wb.save(output)
     output.seek(0)
 
-    return StreamingResponse(
-        output,
+    # OJO: convertimos todo a bytes y enviamos con Response
+    content = output.getvalue()
+
+    return Response(
+        content=content,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
-            "Content-Disposition": f'attachment; filename="{filename}"'
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Content-Length": str(len(content))
         }
     )
