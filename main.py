@@ -1,20 +1,25 @@
-from fastapi import FastAPI
+from typing import List
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 
 app = FastAPI()
 
-
 @app.post("/excel")
-def crear_excel(payload: dict):
-    print("Payload recibido==================:", payload)   # <--- aquí logeamos
-    data = payload.get("data", [])          # filas
-    if not data:
-        return {"error": "No data provided"}
+def crear_excel(payload: List[dict]):
+    if not payload:
+        raise HTTPException(status_code=400, detail="No payload received")
+    
+    # n8n envuelve todo en un array con "json", tomamos el primer elemento
+    payload_dict = payload[0].get("json", {})
 
-    filename = payload.get("filename", "archivo.xlsx")
-    sheet = payload.get("sheet", "Datos")
+    data = payload_dict.get("data", [])
+    if not data:
+        raise HTTPException(status_code=400, detail="No data provided")
+
+    filename = payload_dict.get("filename", "archivo.xlsx")
+    sheet = payload_dict.get("sheet", "Datos")
 
     wb = Workbook()
     ws = wb.active
@@ -41,14 +46,11 @@ def crear_excel(payload: dict):
         for col_idx, header in enumerate(headers, start=1):
             ws.cell(row=row_idx, column=col_idx, value=row.get(header))
 
-    # Guardar en archivo temporal
     temp_file = f"/tmp/{filename}"
     wb.save(temp_file)
 
-    # Devolver archivo al cliente
     return FileResponse(
         path=temp_file,
         filename=filename,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
