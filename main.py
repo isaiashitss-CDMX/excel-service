@@ -8,6 +8,7 @@ app = FastAPI()
 
 @app.post("/excel")
 def crear_excel(payload: dict):
+    print("Payload recibido==================:", payload)   # <--- aquí logeamos
     data = payload.get("data", [])          # filas
     if not data:
         return {"error": "No data provided"}
@@ -50,3 +51,4 @@ def crear_excel(payload: dict):
         filename=filename,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
