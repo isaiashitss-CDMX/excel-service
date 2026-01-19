@@ -8,6 +8,7 @@ app = FastAPI()
 
 @app.post("/excel")
 def crear_excel(payload: dict):
+    print("Payload recibido:", payload)
     data = payload.get("data", [])
     if not data:
         return {"error": "No data provided"}
@@ -56,3 +57,4 @@ def crear_excel(payload: dict):
             "Cache-Control": "no-store"
         }
     )
+
