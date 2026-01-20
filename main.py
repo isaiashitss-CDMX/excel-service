@@ -106,6 +106,7 @@ def get_cell_styles(cell):
         "font_weight": font_weight,
     }
 
+COLUMNAS_PERMITIDAS = {"Nombre", "Email", "Edad"}
 
 @app.post("/procesar_excel", response_class=HTMLResponse)
 async def procesar_excel(file: UploadFile = File(...)):
@@ -143,6 +144,7 @@ async def procesar_excel(file: UploadFile = File(...)):
 
     html = Template(html_template).render(headers=headers, rows=rows)
     return html
+
 
 
 
