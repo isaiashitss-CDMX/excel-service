@@ -110,20 +110,31 @@ def get_cell_styles(cell):
 @app.post("/procesar_excel", response_class=HTMLResponse)
 async def procesar_excel(file: UploadFile = File(...)):
     contents = await file.read()
-    wb = load_workbook(filename=BytesIO(contents), data_only=True)
+    wb = load_workbook(BytesIO(contents), data_only=True)
     ws = wb.active
 
+    # Leer headers y mapear índice
+    header_cells = list(ws[1])
     headers = []
-    for cell in ws[1]:
-        headers.append({
-            "value": cell.value or "",
-            **get_cell_styles(cell)
-        })
+    columnas_idx = []
 
+    for idx, cell in enumerate(header_cells):
+        if cell.value in COLUMNAS_PERMITIDAS:
+            columnas_idx.append(idx)
+            headers.append({
+                "value": cell.value or "",
+                **get_cell_styles(cell)
+            })
+
+    # Leer solo 6 filas y solo columnas permitidas
     rows = []
-    for row in ws.iter_rows(min_row=2, max_row=6):
+    for i, row in enumerate(ws.iter_rows(min_row=2), start=1):
+        if i > 6:
+            break
+
         fila = []
-        for cell in row:
+        for idx in columnas_idx:
+            cell = row[idx]
             fila.append({
                 "value": cell.value or "",
                 **get_cell_styles(cell)
@@ -132,4 +143,6 @@ async def procesar_excel(file: UploadFile = File(...)):
 
     html = Template(html_template).render(headers=headers, rows=rows)
     return html
+
+
 
