@@ -59,6 +59,7 @@ def crear_excel(payload: dict):
         }
     )
 
+# Tu template HTML
 html_template = """
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
   <thead>
@@ -84,19 +85,20 @@ html_template = """
 </table>
 """
 
+# Tu función para estilos de celda
 def get_cell_styles(cell):
+    from openpyxl.styles import PatternFill
     bg_color = "transparent"
-
-    if cell.fill and cell.fill.fill_type == "solid":
-        color = cell.fill.start_color
-        if color and color.rgb:
-            bg_color = f"#{str(color.rgb)[-6:]}"
+    if cell.fill and isinstance(cell.fill, PatternFill) and cell.fill.fill_type == 'solid':
+        bg_color = cell.fill.start_color.rgb
+        if bg_color and len(bg_color) == 8:
+            bg_color = f"#{bg_color[2:]}"  # quitar canal alfa
 
     font_color = "black"
-    if cell.font and cell.font.color:
-        color = cell.font.color
-        if color and color.rgb:
-            font_color = f"#{str(color.rgb)[-6:]}"
+    if cell.font and cell.font.color and cell.font.color.rgb:
+        font_color = cell.font.color.rgb
+        if len(font_color) == 8:
+            font_color = f"#{font_color[2:]}" 
 
     font_weight = "bold" if cell.font and cell.font.bold else "normal"
 
@@ -106,13 +108,21 @@ def get_cell_styles(cell):
         "font_weight": font_weight,
     }
 
-
+# ----------------------------
+# Endpoint adaptado a Base64
+# ----------------------------
 @app.post("/procesar_excel", response_class=HTMLResponse)
-async def procesar_excel(file: UploadFile = File(...)):
-    contents = await file.read()
+async def procesar_excel(file_base64: str = Form(...)):
+    import base64
+
+    # Decodificar Base64 a bytes
+    contents = base64.b64decode(file_base64)
+
+    # Abrir el Excel desde bytes
     wb = load_workbook(filename=BytesIO(contents), data_only=True)
     ws = wb.active
 
+    # Construir headers
     headers = []
     for cell in ws[1]:
         headers.append({
@@ -120,6 +130,7 @@ async def procesar_excel(file: UploadFile = File(...)):
             **get_cell_styles(cell)
         })
 
+    # Construir filas
     rows = []
     for row in ws.iter_rows(min_row=2, max_row=11):
         fila = []
@@ -130,5 +141,6 @@ async def procesar_excel(file: UploadFile = File(...)):
             })
         rows.append(fila)
 
+    # Renderizar HTML
     html = Template(html_template).render(headers=headers, rows=rows)
     return html
