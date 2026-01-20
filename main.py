@@ -121,7 +121,7 @@ async def procesar_excel(file: UploadFile = File(...)):
         })
 
     rows = []
-    for row in ws.iter_rows(min_row=2, max_row=11):
+    for row in ws.iter_rows(min_row=2, max_row=6):
         fila = []
         for cell in row:
             fila.append({
@@ -132,3 +132,4 @@ async def procesar_excel(file: UploadFile = File(...)):
 
     html = Template(html_template).render(headers=headers, rows=rows)
     return html
+
