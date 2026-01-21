@@ -119,6 +119,10 @@ async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=
     wb = load_workbook(BytesIO(contents), data_only=True)
     ws = wb.active
 
+    # Total de registros (sin header)
+    total_registros = ws.max_row - 1
+    total_registros = max(total_registros, 0)
+    
     # Leer headers y mapear índice
     header_cells = list(ws[1])
     headers = []
@@ -151,6 +155,7 @@ async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=
     info_text = f"Mostrando {len(rows)} de {total_registros} registros"
     html = Template(html_template).render(headers=headers, rows=rows, info_text=info_text)
     return html
+
 
 
 
