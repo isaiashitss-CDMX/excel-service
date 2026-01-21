@@ -16,7 +16,18 @@ def crear_excel(payload: dict):
 
     filename = payload.get("filename", "archivo.xlsx")
     sheet = payload.get("sheet", "Datos")
-
+    
+    # Fecha y hora actual: YYYYMMDD_HHMMSS
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Separar nombre y extensión
+    if filename.lower().endswith(".xlsx"):
+        base = filename[:-5]
+    else:
+        base = filename
+    
+    final_filename = f"{base}_{timestamp}.xlsx"
+    
     wb = Workbook()
     ws = wb.active
     ws.title = sheet
@@ -53,7 +64,7 @@ def crear_excel(payload: dict):
         BytesIO(excel_bytes),  # flujo de bytes
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
-            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Content-Disposition": f'attachment; filename="{final_filename}"',
             "Content-Length": str(len(excel_bytes)),  # muy importante
             "Cache-Control": "no-store"
         }
@@ -155,6 +166,7 @@ async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=
     info_text = f"Mostrando {len(rows)} de {total_registros} registros"
     html = Template(html_template).render(headers=headers, rows=rows, info_text=info_text)
     return html
+
 
 
 
