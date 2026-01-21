@@ -176,8 +176,10 @@ async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=
     
     # Texto informativo
     info_text = f"Mostrando {len(rows)} de {total_registros} registros"
-    html = Template(html_template).render(headers=headers, rows=rows, info_text=info_text, archivo=file.filename)
+    leyenda_info = f"Archivo {file.filename}"
+    html = Template(html_template).render(headers=headers, rows=rows, info_text=info_text, archivo=leyenda_info)
     return html
+
 
 
 
