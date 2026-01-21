@@ -10,7 +10,6 @@ app = FastAPI()
 
 @app.post("/excel")
 def crear_excel(payload: dict):
-    #print("Payload recibido:", payload)
     data = payload.get("data", [])
     if not data:
         return {"error": "No data provided"}
@@ -18,17 +17,15 @@ def crear_excel(payload: dict):
     filename = payload.get("filename", "archivo.xlsx")
     sheet = payload.get("sheet", "Datos")
     
-    # Fecha y hora actual: YYYYMMDD_HHMMSS
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
-    # Separar nombre y extensión
     if filename.lower().endswith(".xlsx"):
         base = filename[:-5]
     else:
         base = filename
     
     final_filename = f"{base}_{timestamp}.xlsx"
-    #print("final_filename ------------------------------------> :", final_filename)
+
     wb = Workbook()
     ws = wb.active
     ws.title = sheet
@@ -42,6 +39,14 @@ def crear_excel(payload: dict):
         fill_type="solid"
     )
 
+    # 🔹 NUEVO: estilo para primera columna
+    green_fill = PatternFill(
+        start_color="C6EFCE",
+        end_color="C6EFCE",
+        fill_type="solid"
+    )
+    bold_font = Font(bold=True)
+
     for col, header in enumerate(headers, start=1):
         cell = ws.cell(row=1, column=col, value=header)
         cell.font = header_font
@@ -51,22 +56,25 @@ def crear_excel(payload: dict):
         for col_idx, header in enumerate(headers, start=1):
             ws.cell(row=row_idx, column=col_idx, value=row.get(header))
 
-    # Guardamos en memoria
+    # 🔹 NUEVO: aplicar estilo a A2:A...
+    for row_idx in range(2, ws.max_row + 1):
+        cell = ws.cell(row=row_idx, column=1)
+        cell.fill = green_fill
+        cell.font = bold_font
+
     output = BytesIO()
     wb.save(output)
     wb.close()
     output.seek(0)
 
-    # Convertimos a bytes
     excel_bytes = output.getvalue()
 
-    # Aquí va el headers en StreamingResponse
     return StreamingResponse(
-        BytesIO(excel_bytes),  # flujo de bytes
+        BytesIO(excel_bytes),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={
             "Content-Disposition": f'attachment; filename="{final_filename}"',
-            "Content-Length": str(len(excel_bytes)),  # muy importante
+            "Content-Length": str(len(excel_bytes)),
             "Cache-Control": "no-store"
         }
     )
@@ -167,6 +175,7 @@ async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=
     info_text = f"Mostrando {len(rows)} de {total_registros} registros"
     html = Template(html_template).render(headers=headers, rows=rows, info_text=info_text)
     return html
+
 
 
 
