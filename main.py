@@ -4,6 +4,7 @@ from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, PatternFill
 from io import BytesIO
 from jinja2 import Template
+from datetime import datetime
 
 app = FastAPI()
 
@@ -166,6 +167,7 @@ async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=
     info_text = f"Mostrando {len(rows)} de {total_registros} registros"
     html = Template(html_template).render(headers=headers, rows=rows, info_text=info_text)
     return html
+
 
 
 
