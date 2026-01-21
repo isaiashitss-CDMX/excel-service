@@ -60,10 +60,11 @@ def crear_excel(payload: dict):
     )
 
 html_template = """
+{% if info_text %}
 <p style="font-weight: bold; margin-bottom: 10px;">
   {{ info_text }}
 </p>
-
+{% endif %}
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
   <thead>
     <tr>
@@ -150,6 +151,7 @@ async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=
     info_text = f"Mostrando {len(rows)} de {total_registros} registros"
     html = Template(html_template).render(headers=headers, rows=rows, info_text=info_text)
     return html
+
 
 
 
