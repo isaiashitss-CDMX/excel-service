@@ -10,7 +10,7 @@ app = FastAPI()
 
 @app.post("/excel")
 def crear_excel(payload: dict):
-    print("Payload recibido:", payload)
+    #print("Payload recibido:", payload)
     data = payload.get("data", [])
     if not data:
         return {"error": "No data provided"}
@@ -28,7 +28,7 @@ def crear_excel(payload: dict):
         base = filename
     
     final_filename = f"{base}_{timestamp}.xlsx"
-    print("final_filename ------------------------------------> :", final_filename)
+    #print("final_filename ------------------------------------> :", final_filename)
     wb = Workbook()
     ws = wb.active
     ws.title = sheet
@@ -167,6 +167,7 @@ async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=
     info_text = f"Mostrando {len(rows)} de {total_registros} registros"
     html = Template(html_template).render(headers=headers, rows=rows, info_text=info_text)
     return html
+
 
 
 
