@@ -109,7 +109,7 @@ def get_cell_styles(cell):
 COLUMNAS_PERMITIDAS = {"Nombre", "Correo", "Telefono"}
 
 @app.post("/procesar_excel", response_class=HTMLResponse)
-async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=1, le=100)):
+async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=1, le=10)):
     contents = await file.read()
     wb = load_workbook(BytesIO(contents), data_only=True)
     ws = wb.active
@@ -144,6 +144,7 @@ async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=
 
     html = Template(html_template).render(headers=headers, rows=rows)
     return html
+
 
 
 
