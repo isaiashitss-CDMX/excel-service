@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Query
 from fastapi.responses import HTMLResponse, StreamingResponse
 from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, PatternFill
@@ -144,6 +144,7 @@ async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=
 
     html = Template(html_template).render(headers=headers, rows=rows)
     return html
+
 
 
 
