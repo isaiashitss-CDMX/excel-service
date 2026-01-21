@@ -141,9 +141,12 @@ async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=
                 **get_cell_styles(cell)
             })
         rows.append(fila)
-
-    html = Template(html_template).render(headers=headers, rows=rows)
+    
+    # Texto informativo
+    info_text = f"Mostrando {len(rows)} de {total_registros} registros"
+    html = Template(html_template).render(headers=headers, rows=rows, info_text=info_text)
     return html
+
 
 
 
