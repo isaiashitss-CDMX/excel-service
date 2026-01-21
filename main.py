@@ -80,6 +80,9 @@ def crear_excel(payload: dict):
     )
 
 html_template = """
+<p style="font-weight: bold; margin-bottom: 10px;">
+  {{ archivo }}
+</p>
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
   <thead>
     <tr>
@@ -172,9 +175,10 @@ async def procesar_excel(file: UploadFile = File(...), limit: int = Query(6, ge=
         rows.append(fila)
     
     # Texto informativo
-    info_text = f"Mostrando {len(rows)} de {total_registros} registros del reporte {file.filename}"
-    html = Template(html_template).render(headers=headers, rows=rows, info_text=info_text)
+    info_text = f"Mostrando {len(rows)} de {total_registros} registros"
+    html = Template(html_template).render(headers=headers, rows=rows, info_text=info_text, archivo=file.filename)
     return html
+
 
 
 
